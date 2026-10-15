@@ -1,0 +1,11 @@
+Drag and grapeshot update
+
+CardDrag now creates a non-raycasting card preview that follows the pointer directly in canvas coordinates. PlacementOverlay shows green available cells, red blocked cells, and an exact green/red cursor footprint (order radius for area cards). The grid refreshes at 10 Hz; the cursor and card follow every drag event. Invalid drops do not send a command or spend supply. Returning to the hand cancels deployment. Focus loss, screen changes, and hand replacement clear the overlay.
+
+MatchSimulation.LegalPlacement is shared by client preview and authoritative validation. It accounts for team direction, arena boundaries, blocked foundations, center rocks, and lanes opened by destroyed outposts. The map also accounts for supply and unit capacity. The server remains authoritative if state changes in transit.
+
+Grapeshot adds a short-lived replicated zone cue with a unique ID, target, team, radius, and expiry. Both clients render nine arcing pellets with luminous streaks followed by splash rings and an expanding impact flash. Damage still occurs at the existing 0.35-second order delay; presentation does not apply extra damage. The cue expires at 0.95 seconds. Deploy the updated backend alongside the client for online cues; training includes the same code locally.
+
+Validation: 42 offline automated checks passed, including both teams, blocked foundations, unlocked lanes, order targeting, replicated grapeshot cues, delayed damage, and effect expiry. Physical touch-device performance has not been profiled.
+
+Windows and Android development builds succeeded on 2026-10-14. Android v2 APK signature verified. Runtime FeedbackShowcase passed actual drag callback checks and captured placement-valid, placement-invalid, grapeshot-target, grapeshot-flight, and grapeshot-impact in Builds/Feedback. Run Windows with -batchmode -screen-width 540 -screen-height 960 --feedback-capture=ABSOLUTE_DIRECTORY to reproduce (graphics required).

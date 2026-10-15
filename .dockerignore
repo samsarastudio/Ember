@@ -1,0 +1,13 @@
+.tools
+Client/Library
+Client/Temp
+Client/Logs
+Builds
+Backend/bin
+Backend/obj
+Backend/data
+Tests
+.git
+.env
+Design
+*.log

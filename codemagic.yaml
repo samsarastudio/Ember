@@ -1,0 +1,51 @@
+workflows:
+  ios-release:
+    name: Ember iOS release IPA
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      unity: 6000.2.6f2
+      xcode: latest
+      groups:
+        - unity_credentials
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.emberwake.fleetduel
+    scripts:
+      - name: Activate Unity
+        script: |
+          set -euo pipefail
+          : "${UNITY_SERIAL:?Set UNITY_SERIAL in the unity_credentials secret group}"
+          : "${UNITY_EMAIL:?Set UNITY_EMAIL in the unity_credentials secret group}"
+          : "${UNITY_PASSWORD:?Set UNITY_PASSWORD in the unity_credentials secret group}"
+          "$UNITY_HOME/Contents/MacOS/Unity" -batchmode -quit -nographics -logFile - \
+            -serial "$UNITY_SERIAL" -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD"
+      - name: Export release Xcode project
+        script: |
+          set -euo pipefail
+          export EMBERWAKE_BUILD_NUMBER=$((BUILD_NUMBER + 2))
+          "$UNITY_HOME/Contents/MacOS/Unity" -batchmode -quit -nographics \
+            -projectPath "$CM_BUILD_DIR/Client" -buildTarget iOS \
+            -executeMethod BuildGame.IOS -logFile "$CM_BUILD_DIR/unity-ios.log"
+          test -d "$CM_BUILD_DIR/Builds/iOS/Unity-iPhone.xcodeproj"
+      - name: Apply Apple signing profiles
+        script: |
+          set -euo pipefail
+          xcode-project use-profiles --project "$CM_BUILD_DIR/Builds/iOS/Unity-iPhone.xcodeproj"
+      - name: Build signed IPA
+        script: |
+          set -euo pipefail
+          xcode-project build-ipa \
+            --project "$CM_BUILD_DIR/Builds/iOS/Unity-iPhone.xcodeproj" \
+            --scheme Unity-iPhone
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - unity-ios.log
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+    publishing:
+      scripts:
+        - name: Return Unity license
+          script: |
+            "$UNITY_HOME/Contents/MacOS/Unity" -batchmode -quit -nographics -logFile - \
+              -returnlicense -username "$UNITY_EMAIL" -password "$UNITY_PASSWORD"

@@ -1,0 +1,16 @@
+services:
+  harbor:
+    build:
+      context: .
+      dockerfile: Backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      EMBERWAKE_ADMIN_TOKEN: ${EMBERWAKE_ADMIN_TOKEN:?Set a random admin token of at least 32 characters}
+      EMBERWAKE_PRIVACY_URL: ${EMBERWAKE_PRIVACY_URL:-}
+      EMBERWAKE_TERMS_URL: ${EMBERWAKE_TERMS_URL:-}
+    volumes:
+      - harbor-data:/data
+    ports:
+      - "127.0.0.1:5080:8080"
+volumes:
+  harbor-data:

@@ -1,0 +1,24 @@
+[Unit]
+Description=Emberwake accounts and authoritative battles
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=emberwake
+Group=emberwake
+WorkingDirectory=/opt/emberwake/Api
+EnvironmentFile=/etc/emberwake.env
+ExecStart=/opt/emberwake/Api/Emberwake.Backend
+Restart=on-failure
+RestartSec=5
+KillSignal=SIGINT
+TimeoutStopSec=30
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/emberwake
+
+[Install]
+WantedBy=multi-user.target
